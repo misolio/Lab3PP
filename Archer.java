@@ -2,8 +2,9 @@ public class Archer extends Droid {
 
     private int range;
 
-    public Archer(String name, int health, int damage, int armor, int x, int y, String weaponName, int weaponDamage, int range) {
-        super(name, health, damage, armor, x, y, weaponName, weaponDamage);
+    public Archer(String name, int health, int damage, int armor, int x, int y, String weaponName, int weaponDamage,
+                  int range,String team) {
+        super(name, health, damage, armor, x, y, weaponName, weaponDamage,team);
         this.range = range;
     }
     public int getRange() {
@@ -24,35 +25,31 @@ public class Archer extends Droid {
             double attackStrengthFactor = 1.0 - (distance / range);  // Наприклад, сила зменшується з відстанню
             int effectiveDamage = (int) (this.damage * attackStrengthFactor);
 
-            System.out.println(name + " стріляє з лука на відстані " + (int)distance + " метрів з силою удару " + effectiveDamage);
+            System.out.println(name + " стріляє з лука на відстані " + (int)distance + " метрів з силою удару "
+                    + effectiveDamage);
             enemy.takeDamage(effectiveDamage); // Використовуємо зменшений дамаг залежно від дистанції
         } else {
             System.out.println(name + " не може атакувати ворога, оскільки ворог занадто далеко.");
         }
     }
     @Override
-    public void move(Droid enemy) {
-        // Обчислюємо відстань між арчерем і ворогом
+    public void move(Droid enemy, Arena arena) {
+        // Обчислюємо відстань між лучником і ворогом
         int distanceX = Math.abs(this.x - enemy.getX());
         int distanceY = Math.abs(this.y - enemy.getY());
 
-        // Якщо ворог знаходиться на відстані 2 або менше кроків, відступаємо
-        if (distanceX <= 2 && distanceY <= 2) {
-            if (this.x < enemy.getX()) {
-                this.x--; // Відступаємо вліво
-            } else if (this.x > enemy.getX()) {
-                this.x++; // Відступаємо вправо
-            }
+        int newX = x;
+        int newY = y;
 
-            if (this.y < enemy.getY()) {
-                this.y--; // Відступаємо вгору
-            } else if (this.y > enemy.getY()) {
-                this.y++; // Відступаємо вниз
-            }
-
-            System.out.println(name + " відступає від ворога на позицію (" + this.x + "," + this.y + ")");
-        } else {
-            System.out.println(name + " залишається на місці.");
+        // Якщо ворог є воїном, лучник відступає
+        if (enemy instanceof Warrior ) {
+            calculateMovement(enemy, false, arena);
+        }
+        // Якщо ворог є магом, лучник переслідує його
+        else {
+            // Наближаємося до мага
+            calculateMovement(enemy, true, arena);
         }
     }
+
 }
