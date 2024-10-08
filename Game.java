@@ -1,82 +1,76 @@
 import java.util.List;
+import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Game {
+    private static List<Droid> droids = new ArrayList<>();
+    private static List<String> battleLog = new ArrayList<>();
+    private static String fileName = "C:\\Users\\solij\\OneDrive\\Рабочий стол\\ППлаб3.txt";
+    private static BattleManager battleManager = new BattleManager(droids, battleLog);
 
-    // Кольори для дроїдів і рамки
-    public static final String RESET = "\u001B[0m";  // Скидання кольору
-    public static final String RED = "\u001B[31m";   // Колір для команди 1
-    public static final String GREEN = "\u001B[32m"; // Колір для команди 2
-    public static final String BLUE = "\u001B[34m";  // Колір для команди 3
-    public static final String YELLOW = "\u001B[33m"; // Жовтий для рамки
-
-    // Функція для відображення арени з рамкою
-    public static void displayArenaWithBorder(Arena arena) {
-        int width = arena.getWidth();
-        int height = arena.getHeight();
-
-        // Верхня межа
-        System.out.print(YELLOW + "╔");
-        for (int i = 0; i < width; i++) {
-            System.out.print("═");
-        }
-        System.out.println("╗" + RESET);
-
-        // Виведення поля з вертикальними межами
-        for (int y = 0; y < height; y++) {
-            System.out.print(YELLOW + "║" + RESET);  // Ліва межа
-            for (int x = 0; x < width; x++) {
-                boolean isDroid = false;
-                for (Droid droid : arena.getDroids()) {
-                    if (droid.getX() == x && droid.getY() == y) {
-                        // Вибір кольору для кожної команди
-                        if (droid.getTeam().equals("Red")) {
-                            System.out.print(RED + droid.getName().charAt(0) + RESET); // Червоний для команди RedTeam
-                        } else if (droid.getTeam().equals("Green")) {
-                            System.out.print(GREEN + droid.getName().charAt(0) + RESET); // Зелений для команди GreenTeam
-                        } else if (droid.getTeam().equals("Blue")) {
-                            System.out.print(BLUE + droid.getName().charAt(0) + RESET); // Синій для команди BlueTeam
-                        }
-                        isDroid = true;
-                        break;
-                    }
-                }
-                if (!isDroid) {
-                    System.out.print(" "); // Порожнє місце
-                }
-            }
-            System.out.println(YELLOW + "║" + RESET);  // Права межа
-        }
-
-        // Нижня межа
-        System.out.print(YELLOW + "╚");
-        for (int i = 0; i < width; i++) {
-            System.out.print("═");
-        }
-        System.out.println("╝" + RESET);
-    }
     public static void main(String[] args) {
-        Arena arena = new Arena(15, 10);
+        Scanner scanner = new Scanner(System.in);
+        initializeDroids();
 
-        // Створюємо команду червоних
-        Warrior redWarrior = new Warrior("Warrior Red ", 5, 15, 10, 2, 2, "Sword", 10, "Red");
-        Archer redArcher = new Archer("Archer Red", 4, 10, 5, 3, 3, "Bow", 7, 5, "Red");
-
-        // Створюємо команду синіх
-        Mage blueMage = new Mage("Mage Blue", 3, 0, 5, 7, 7, "Magic Staff", 0, 50, 10, "Blue");
-        Archer blueArcher = new Archer("Archer Blue", 4, 10, 5, 8, 8, "Bow", 7, 5, "Blue");
-
-        // Додаємо дроїдів на арену
-        arena.addDroid(redWarrior);
-        arena.addDroid(redArcher);
-        arena.addDroid(blueMage);
-        arena.addDroid(blueArcher);
-
-        while (!arena.isBattleOver()) {
-            displayArenaWithBorder(arena);
-            arena.updateArena();
-        }
-        displayArenaWithBorder(arena);
+        int choice;
+        do {
+            displayMenu();
+            choice = scanner.nextInt();
+            handleMenuChoice(choice);
+        } while (choice != 7);
     }
 
+    private static void displayMenu() {
+        System.out.println("\n===== Меню =====");
+        System.out.println("1. Створити дроїда");
+        System.out.println("2. Вивести список дроїдів");
+        System.out.println("3. Запустити бій 1 на 1");
+        System.out.println("4. Запустити командний бій");
+        System.out.println("5. Записати попередній бій у файл");
+        System.out.println("6. Відтворити попередній бій");
+        System.out.println("7. Вийти");
+        System.out.println("================\n");
+        System.out.print("Виберіть пункт меню: ");
+    }
 
+    private static void handleMenuChoice(int choice) {
+        switch (choice) {
+            case 1:
+                droids.add(DroidFactory.createDroid());
+                System.out.println("Дроїд доданий у список дроїдів.");
+                break;
+            case 2:
+                DroidFactory.displayDroids(droids);
+                break;
+            case 3:
+                battleManager.startOneOnOneBattle();
+                DroidFactory.resetAllDroids(droids);
+                break;
+            case 4:
+                battleManager.startTeamBattle();
+                DroidFactory.resetAllDroids(droids);
+                break;
+            case 5:
+                battleManager.savePreviousBattle(fileName);
+                break;
+            case 6:
+                BattleFile.loadBattleLog(fileName);
+                break;
+            case 7:
+                System.out.println("Вихід");
+                break;
+            default:
+                System.out.println("Невірний вибір.");
+                break;
+        }
+    }
+
+    private static void initializeDroids() {
+        droids.add(new Warrior("Wert", 129, 50, 10, 7, 6, "Молот", 40, "Red"));
+        droids.add(new Archer("Atyr", 80, 30, 5, 1, 1, "Лук", 25, 5, "Red"));
+        droids.add(new Mage("Met", 70, 0, 5, 2, 2, "Посох", 0, 50, 10, "Purple"));
+        droids.add(new Warrior("Wit", 100, 20, 10, 8, 7, "Молот", 30, "Blue"));
+        droids.add(new Archer("Aro", 90, 15, 15, 3, 4, "Лук", 40, 5, "Blue"));
+        droids.add(new Mage("Max", 88, 0, 20, 8, 1, "Посох", 0, 50, 10, "Green"));
+    }
 }
